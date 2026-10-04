@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>English Grammar Error Detection System</title>
+    <!-- Google Fonts & FontAwesome -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+    <div class="app-container">
+        <!-- Top Navigation -->
+        <header class="navbar">
+            <div class="navbar-brand">
+                <div class="brand-icon">
+                    <i class="fa-solid fa-graduation-cap"></i>
+                </div>
+                <div class="brand-text">
+                    <h1>English Grammar Detector</h1>
+                    <span class="brand-subtitle">Educational NLP Writing & Error Analysis System</span>
+                </div>
+            </div>
+            <div class="navbar-actions">
+                <button id="btn-open-history" class="btn btn-secondary">
+                    <i class="fa-solid fa-clock-rotate-left"></i>
+                    <span>History Log</span>
+                    <span id="history-badge" class="badge">0</span>
+                </button>
+            </div>
+        </header>
+
+        <!-- Main Dashboard Body -->
+        <main class="dashboard-grid">
+            <!-- Left Column: Input & Controls -->
+            <section class="card editor-card">
+                <div class="card-header">
+                    <div class="card-title">
+                        <i class="fa-solid fa-pen-to-square"></i>
+                        <h2>Text Analysis Editor</h2>
+                    </div>
+                    <div class="word-counter">
+                        <span id="stat-word-count">0</span> words | <span id="stat-char-count">0</span> characters
+                    </div>
+                </div>
+
+                <!-- Sample Preset Buttons -->
+                <div class="samples-bar">
+                    <span class="samples-label"><i class="fa-solid fa-bolt"></i> Quick Samples:</span>
+                    <div id="samples-container" class="samples-pills">
+                        <!-- Populated by JavaScript -->
+                    </div>
+                </div>
+
+                <!-- Main Textarea -->
+                <div class="textarea-wrapper">
+                    <textarea id="text-input" placeholder="Type or paste your English text here to check for grammar, spelling, punctuation, capitalization, subject-verb agreement, and writing errors..."></textarea>
+                </div>
+
+                <!-- Action Toolbar -->
+                <div class="editor-actions">
+                    <div class="left-actions">
+                        <button id="btn-clear" class="btn btn-tertiary">
+                            <i class="fa-solid fa-eraser"></i> Clear Text
+                        </button>
+                    </div>
+                    <div class="right-actions">
+                        <button id="btn-analyze" class="btn btn-primary">
+                            <i class="fa-solid fa-magnifying-glass"></i>
+                            <span>Check Grammar</span>
+                        </button>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Right Column: Results & Dashboard -->
+            <section class="results-section">
+                <!-- Welcome Placeholder State -->
+                <div id="placeholder-state" class="card placeholder-card">
+                    <div class="placeholder-content">
+                        <div class="placeholder-icon">
+                            <i class="fa-solid fa-spell-check"></i>
+                        </div>
+                        <h3>Ready for Analysis</h3>
+                        <p>Enter an English sentence or choose a preset sample to detect errors, review suggestions, and calculate your grammar score.</p>
+                    </div>
+                </div>
+
+                <!-- Analysis Results Dashboard -->
+                <div id="results-dashboard" class="results-container hidden">
+                    <!-- Top Summary Grid -->
+                    <div class="metrics-grid">
+                        <!-- Grammar Score Dial -->
+                        <div class="card score-card">
+                            <div class="score-dial-wrapper">
+                                <svg class="score-dial" viewBox="0 0 120 120">
+                                    <circle class="dial-bg" cx="60" cy="60" r="50"></circle>
+                                    <circle id="score-dial-fill" class="dial-fill" cx="60" cy="60" r="50" stroke-dasharray="314" stroke-dashoffset="0"></circle>
+                                </svg>
+                                <div class="score-value">
+                                    <span id="score-num">100</span>
+                                    <span class="score-denom">/100</span>
+                                </div>
+                            </div>
+                            <div class="score-info">
+                                <h3>Grammar Score</h3>
+                                <p id="score-status" class="status-tag">Perfect</p>
+                            </div>
+                        </div>
+
+                        <!-- Stat Cards -->
+                        <div class="card stat-card">
+                            <div class="stat-icon error-icon"><i class="fa-solid fa-circle-exclamation"></i></div>
+                            <div class="stat-data">
+                                <span id="metric-errors" class="stat-num">0</span>
+                                <span class="stat-label">Total Errors</span>
+                            </div>
+                        </div>
+
+                        <div class="card stat-card">
+                            <div class="stat-icon success-icon"><i class="fa-solid fa-circle-check"></i></div>
+                            <div class="stat-data">
+                                <span id="metric-correct" class="stat-num">0</span>
+                                <span class="stat-label">Correct Sentences</span>
+                            </div>
+                        </div>
+
+                        <div class="card stat-card">
+                            <div class="stat-icon suggestion-icon"><i class="fa-solid fa-lightbulb"></i></div>
+                            <div class="stat-data">
+                                <span id="metric-suggestions" class="stat-num">0</span>
+                                <span class="stat-label">Suggestions</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Highlighted Text Display & Copy Actions -->
+                    <div class="card highlight-card">
+                        <div class="card-header">
+                            <div class="card-title">
+                                <i class="fa-solid fa-highlighter"></i>
+                                <h2>Interactive Text View</h2>
+                            </div>
+                            <button id="btn-copy-corrected" class="btn btn-outline">
+                                <i class="fa-solid fa-copy"></i> Copy Corrected Text
+                            </button>
+                        </div>
+                        <div id="highlight-view" class="highlight-container">
+                            <!-- Populated dynamically with highlighted text spans -->
+                        </div>
+                    </div>
+
+                    <!-- Error Issues List Section -->
+                    <div class="card issues-card">
+                        <div class="card-header">
+                            <div class="card-title">
+                                <i class="fa-solid fa-list-check"></i>
+                                <h2>Detected Errors & Corrections (<span id="issue-count">0</span>)</h2>
+                            </div>
+                            <div id="engine-badge" class="engine-tag">
+                                <i class="fa-solid fa-microchip"></i> NLTK Engine
+                            </div>
+                        </div>
+
+                        <!-- Filter Chips -->
+                        <div id="filter-chips" class="filter-chips">
+                            <button class="chip active" data-filter="all">All</button>
+                            <button class="chip" data-filter="Subject-Verb Agreement">Subject-Verb</button>
+                            <button class="chip" data-filter="Spelling">Spelling</button>
+                            <button class="chip" data-filter="Missing Punctuation">Punctuation</button>
+                            <button class="chip" data-filter="Capitalization">Capitalization</button>
+                            <button class="chip" data-filter="Common Patterns">Patterns</button>
+                            <button class="chip" data-filter="Repeated Words">Repetition</button>
+                        </div>
+
+                        <!-- Error Items Container -->
+                        <div id="errors-list" class="errors-list">
+                            <!-- Populated with error cards -->
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <!-- History Drawer / Modal -->
+    <div id="history-modal" class="modal-overlay hidden">
+        <div class="modal-card">
+            <div class="modal-header">
+                <div class="modal-title">
+                    <i class="fa-solid fa-clock-rotate-left"></i>
+                    <h2>Analysis History Log</h2>
+                </div>
+                <div class="modal-actions">
+                    <button id="btn-clear-history" class="btn btn-danger-link">
+                        <i class="fa-solid fa-trash-can"></i> Clear History
+                    </button>
+                    <button id="btn-close-history" class="btn-close">
+                        <i class="fa-solid fa-xmark"></i>
+                    </button>
+                </div>
+            </div>
+            <div class="modal-body">
+                <div id="history-list" class="history-list">
+                    <!-- Loaded dynamically via API -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast Notification Container -->
+    <div id="toast-container" class="toast-container"></div>
+
+    <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+</body>
+</html>
